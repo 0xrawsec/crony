@@ -77,9 +77,13 @@ func (c *Crony) Schedule(t *Task, prio int) {
 	}
 }
 
+func (c *Crony) Tasks() []*Task {
+	return c.tasks.ordered()
+}
+
 func (c *Crony) start() {
 	for {
-		for _, t := range c.tasks.ordered() {
+		for _, t := range c.Tasks() {
 			if c.ctx.Err() != nil {
 				return
 			}

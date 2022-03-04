@@ -72,7 +72,7 @@ func TestCrony(t *testing.T) {
 
 	t.Log("Testing basic crony")
 	c := New().Sleep(time.Millisecond * 100)
-	c.Schedule(new(Task).Func(helloWorld).Args(t).Ticker(time.Millisecond*200), PrioMedium)
+	c.Schedule(NewTask("HelloWorld").Func(helloWorld).Args(t).Ticker(time.Millisecond*200), PrioMedium)
 	c.Start()
 	time.Sleep(tick * 2)
 	c.Stop()
@@ -80,7 +80,7 @@ func TestCrony(t *testing.T) {
 	t.Log("Testing crony with context")
 	ctx, cancel := context.WithTimeout(context.Background(), tick*2)
 	c = NewWithContext(ctx).Sleep(time.Millisecond * 100)
-	c.Schedule(new(Task).Func(helloWorld).Args(t).Ticker(time.Millisecond*200), PrioMedium)
+	c.Schedule(NewTask("HelloWorld").Func(helloWorld).Args(t).Ticker(time.Millisecond*200), PrioMedium)
 	c.Start()
 	c.Wait()
 	cancel()
@@ -88,10 +88,14 @@ func TestCrony(t *testing.T) {
 	t.Log("Testing crony with priorities")
 	ctx, cancel = context.WithTimeout(context.Background(), tick*2)
 	c = NewWithContext(ctx).Sleep(time.Millisecond * 100)
-	c.Schedule(new(Task).Func(log).Args(t, "High prio").Ticker(time.Millisecond*200), PrioHigh)
-	c.Schedule(new(Task).Func(log).Args(t, "Medium prio").Ticker(time.Millisecond*400), PrioMedium)
-	c.Schedule(new(Task).Func(log).Args(t, "Low prio").Ticker(time.Millisecond*600), PrioLow)
+	c.Schedule(NewTask("Log high prio").Func(log).Args(t, "High prio").Ticker(time.Millisecond*200), PrioHigh)
+	c.Schedule(NewTask("Log medium prio").Func(log).Args(t, "Medium prio").Ticker(time.Millisecond*400), PrioMedium)
+	c.Schedule(NewTask("Log low prio").Func(log).Args(t, "Low prio").Ticker(time.Millisecond*600), PrioLow)
+	for _, tk := range c.Tasks() {
+		t.Logf("Scheduled task: %s", tk.Name)
+	}
 	c.Start()
 	c.Wait()
 	cancel()
+
 }

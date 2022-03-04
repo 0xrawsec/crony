@@ -15,6 +15,8 @@ type Task struct {
 	nextRun time.Time
 	lastRun time.Time
 	tick    time.Duration
+
+	Name string
 }
 
 var (
@@ -22,6 +24,10 @@ var (
 	ErrTaskWrongNumOfArg = errors.New("wrong number of arguments")
 	ErrTaskWrongArgType  = errors.New("wrong argument type")
 )
+
+func NewTask(name string) *Task {
+	return &Task{Name: name}
+}
 
 func (t *Task) control() error {
 	v := reflect.ValueOf(t.fun)
