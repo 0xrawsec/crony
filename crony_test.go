@@ -8,6 +8,11 @@ import (
 	"github.com/0xrawsec/toast"
 )
 
+var (
+	asyncVar    = 0
+	asyncTicker = time.Millisecond * 100
+)
+
 type testStruct struct{}
 
 func (t *testStruct) HelloWorld(T *testing.T) {
@@ -22,6 +27,16 @@ func helloWorld(t *testing.T) {
 
 func log(t *testing.T, s string) {
 	t.Log(s)
+}
+
+func asyncFunc() {
+	if asyncVar != 0 {
+		panic("should be 0")
+	}
+	asyncVar++
+	defer func() { asyncVar-- }()
+	time.Sleep(asyncTicker * 2)
+
 }
 
 func TestTask(t *testing.T) {
@@ -98,4 +113,14 @@ func TestCrony(t *testing.T) {
 	c.Wait()
 	cancel()
 
+}
+
+func TestAsyncTask(t *testing.T) {
+	tick := time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), tick*2)
+	c := NewWithContext(ctx).Sleep(asyncTicker)
+	c.Schedule(NewAsyncTask("Async Task").Func(asyncFunc).Ticker(asyncTicker), PrioHigh)
+	c.Start()
+	c.Wait()
+	cancel()
 }

@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+// Task structure describing a task to execute
+// by a Crony
 type Task struct {
 	sync.Mutex
 	fun     interface{}
@@ -15,6 +17,8 @@ type Task struct {
 	nextRun time.Time
 	lastRun time.Time
 	tick    time.Duration
+	running bool
+	async   bool
 
 	Name string
 }
@@ -25,8 +29,16 @@ var (
 	ErrTaskWrongArgType  = errors.New("wrong argument type")
 )
 
+// NewTask creates a new Task with a name
 func NewTask(name string) *Task {
 	return &Task{Name: name}
+}
+
+// NewAsyncTask creates a new asynchronous Task with a name.
+// An asynchronous task will run in a separate go routine and
+// will de facto not be blocking
+func NewAsyncTask(name string) *Task {
+	return NewTask(name).Async()
 }
 
 func (t *Task) control() error {
@@ -59,21 +71,25 @@ func (t *Task) updateSchedule() {
 	}
 }
 
+// Func sets the fuction to execute by the Task
 func (t *Task) Func(f interface{}) *Task {
 	t.fun = f
 	return t
 }
 
+// Args sets the arguments used by the function to execute
 func (t *Task) Args(args ...interface{}) *Task {
 	t.args = args
 	return t
 }
 
+// Schedule schedule a time at which a Task must be ran
 func (t *Task) Schedule(next time.Time) *Task {
 	t.nextRun = next
 	return t
 }
 
+// Ticker sets ticker's duration to run Task at every tick
 func (t *Task) Ticker(d time.Duration) *Task {
 	t.tick = d
 	if t.nextRun.IsZero() {
@@ -82,9 +98,23 @@ func (t *Task) Ticker(d time.Duration) *Task {
 	return t
 }
 
+// Async makes the Task asynchronous
+func (t *Task) Async() *Task {
+	t.async = true
+	return t
+}
+
+// IsRunning returns true if the Task is running
+func (t *Task) IsRunning() bool {
+	return t.running
+}
+
+// Run runs a Task and returns a error in case the
+// function cannot be ran
 func (t *Task) Run() (err error) {
 	t.Lock()
 	defer t.Unlock()
+	t.running = true
 
 	v := reflect.ValueOf(t.fun)
 	vargs := make([]reflect.Value, 0, len(t.args))
@@ -99,11 +129,20 @@ func (t *Task) Run() (err error) {
 
 	// we schedule next run
 	t.updateSchedule()
-	v.Call(vargs)
+	if t.async {
+		go func() {
+			defer func() { t.running = false }()
+			v.Call(vargs)
+		}()
+	} else {
+		defer func() { t.running = false }()
+		v.Call(vargs)
+	}
 
 	return
 }
 
+// ShouldRun returns true if the Task has to run
 func (t *Task) ShouldRun() bool {
 	return !t.nextRun.IsZero() && (t.nextRun.Before(time.Now()) || t.nextRun.Equal(time.Now()))
 }

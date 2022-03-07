@@ -30,6 +30,7 @@ func (t *tasks) ordered() (out []*Task) {
 	return
 }
 
+// Crony structure used to schedule tasks
 type Crony struct {
 	sync.WaitGroup
 	ctx    context.Context
@@ -49,18 +50,22 @@ func newCrony() *Crony {
 	}
 }
 
+// New creates a new Crony structure
 func New() (c *Crony) {
 	c = newCrony()
 	c.ctx, c.cancel = context.WithCancel(context.Background())
 	return
 }
 
+// New creates a new Crony structure from a context
 func NewWithContext(ctx context.Context) (c *Crony) {
 	c = newCrony()
 	c.ctx = ctx
 	return
 }
 
+// Sleep configures the time the Crony sleeps between
+// every loop checking for tasks to execute
 func (c *Crony) Sleep(d time.Duration) *Crony {
 	c.sleep = d
 	return c
@@ -77,6 +82,8 @@ func (c *Crony) Schedule(t *Task, prio int) {
 	}
 }
 
+// Tasks returns the list of Tasks loaded in the Crony
+// ordered by priority
 func (c *Crony) Tasks() []*Task {
 	return c.tasks.ordered()
 }
@@ -87,7 +94,7 @@ func (c *Crony) start() {
 			if c.ctx.Err() != nil {
 				return
 			}
-			if t.ShouldRun() {
+			if t.ShouldRun() && !t.IsRunning() {
 				if err := t.Run(); err != nil {
 					panic(err)
 				}
@@ -97,6 +104,7 @@ func (c *Crony) start() {
 	}
 }
 
+// Start starts the Crony's scheduling loop
 func (c *Crony) Start() {
 	c.Add(1)
 	go func() {
@@ -105,6 +113,7 @@ func (c *Crony) Start() {
 	}()
 }
 
+// Stop stops the Crony
 func (c *Crony) Stop() {
 	if c.cancel != nil {
 		c.cancel()
