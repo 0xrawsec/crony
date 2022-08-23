@@ -15,9 +15,10 @@ github.com/0xrawsec/crony/task.go:66:	updateSchedule	100.0%
 github.com/0xrawsec/crony/task.go:75:	Func		100.0%
 github.com/0xrawsec/crony/task.go:81:	Args		100.0%
 github.com/0xrawsec/crony/task.go:87:	Schedule	100.0%
-github.com/0xrawsec/crony/task.go:93:	Ticker		100.0%
-github.com/0xrawsec/crony/task.go:102:	Async		100.0%
-github.com/0xrawsec/crony/task.go:108:	IsRunning	100.0%
-github.com/0xrawsec/crony/task.go:114:	Run		100.0%
-github.com/0xrawsec/crony/task.go:146:	ShouldRun	100.0%
+github.com/0xrawsec/crony/task.go:93:	Tick		100.0%
+github.com/0xrawsec/crony/task.go:98:	Ticker		100.0%
+github.com/0xrawsec/crony/task.go:107:	Async		100.0%
+github.com/0xrawsec/crony/task.go:113:	IsRunning	100.0%
+github.com/0xrawsec/crony/task.go:119:	Run		100.0%
+github.com/0xrawsec/crony/task.go:151:	ShouldRun	100.0%
 total:					(statements)	100.0%

@@ -89,6 +89,11 @@ func (t *Task) Schedule(next time.Time) *Task {
 	return t
 }
 
+// Tick returns tick value
+func (t *Task) Tick() time.Duration {
+	return t.tick
+}
+
 // Ticker sets ticker's duration to run Task at every tick
 func (t *Task) Ticker(d time.Duration) *Task {
 	t.tick = d

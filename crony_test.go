@@ -107,7 +107,7 @@ func TestCrony(t *testing.T) {
 	c.Schedule(NewTask("Log medium prio").Func(log).Args(t, "Medium prio").Ticker(time.Millisecond*400), PrioMedium)
 	c.Schedule(NewTask("Log low prio").Func(log).Args(t, "Low prio").Ticker(time.Millisecond*600), PrioLow)
 	for _, tk := range c.Tasks() {
-		t.Logf("Scheduled task: %s", tk.Name)
+		t.Logf("Scheduled task: %s (tick=%s)", tk.Name, tk.Tick())
 	}
 	c.Start()
 	c.Wait()
