@@ -55,10 +55,12 @@ func TestTask(t *testing.T) {
 
 	// test schedule
 	task := new(Task).Func(empty).Schedule(time.Now().Add(tick))
+	// if the task did not run yet, it should return true
 	tt.Assert(task.IsScheduled())
 	tt.Assert(!task.ShouldRun())
 	time.Sleep(tick)
 	tt.Assert(task.ShouldRun())
+	tt.Assert(task.IsScheduled())
 	tt.CheckErr(task.Run())
 	// task should not be runnable
 	tt.Assert(!task.ShouldRun())
