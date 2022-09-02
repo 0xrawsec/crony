@@ -109,6 +109,16 @@ func (t *Task) Async() *Task {
 	return t
 }
 
+// IsScheduled returns true if the task is scheduled to run in the future
+func (t *Task) IsScheduled() bool {
+	return t.nextRun.After(time.Now())
+}
+
+// IsAsync returns true if the task is asynchrone
+func (t *Task) IsAsync() bool {
+	return t.async
+}
+
 // IsRunning returns true if the Task is running
 func (t *Task) IsRunning() bool {
 	return t.running

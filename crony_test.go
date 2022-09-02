@@ -55,12 +55,14 @@ func TestTask(t *testing.T) {
 
 	// test schedule
 	task := new(Task).Func(empty).Schedule(time.Now().Add(tick))
+	tt.Assert(task.IsScheduled())
 	tt.Assert(!task.ShouldRun())
 	time.Sleep(tick)
 	tt.Assert(task.ShouldRun())
 	tt.CheckErr(task.Run())
 	// task should not be runnable
 	tt.Assert(!task.ShouldRun())
+	tt.Assert(!task.IsScheduled())
 
 	// test ticker
 	task = new(Task).Func(empty).Ticker(tick)
@@ -107,7 +109,9 @@ func TestCrony(t *testing.T) {
 	c.Schedule(NewTask("Log medium prio").Func(log).Args(t, "Medium prio").Ticker(time.Millisecond*400), PrioMedium)
 	c.Schedule(NewTask("Log low prio").Func(log).Args(t, "Low prio").Ticker(time.Millisecond*600), PrioLow)
 	for _, tk := range c.Tasks() {
-		t.Logf("Scheduled task: %s (tick=%s)", tk.Name, tk.Tick())
+		tt.Assert(tk.IsScheduled())
+		tt.Assert(tk.IsAsync() == false)
+		t.Logf("Scheduled task: %s (tick=%s) (scheduled=%t) (async=%t)", tk.Name, tk.Tick(), tk.IsScheduled(), tk.IsAsync())
 	}
 	c.Start()
 	c.Wait()
@@ -116,10 +120,15 @@ func TestCrony(t *testing.T) {
 }
 
 func TestAsyncTask(t *testing.T) {
+	tt := toast.FromT(t)
+
 	tick := time.Second
 	ctx, cancel := context.WithTimeout(context.Background(), tick*2)
 	c := NewWithContext(ctx).Sleep(asyncTicker)
 	c.Schedule(NewAsyncTask("Async Task").Func(asyncFunc).Ticker(asyncTicker), PrioHigh)
+	for _, tk := range c.Tasks() {
+		tt.Assert(tk.IsAsync())
+	}
 	c.Start()
 	c.Wait()
 	cancel()
